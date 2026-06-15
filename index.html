@@ -54,6 +54,7 @@
     width: 100%;
     box-shadow: 0 8px 40px rgba(212,84,126,0.12);
     text-align: center;
+    position: relative;
   }
 
   .brand-badge {
@@ -972,19 +973,45 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="brand-badge">From Licensed to Launched</div>
-    <h1 class="login-title">Welcome to Your<br>Success Hub 🔑</h1>
-    <p class="login-sub">By <span>Shelley McCune</span> | eXp Realty</p>
+    <!-- Admin quick-access link top right -->
+    <div style="position:absolute;top:14px;right:16px;">
+      <button onclick="toggleAdminPanel()" style="background:none;border:none;font-size:11px;color:#ccc;cursor:pointer;letter-spacing:.5px;font-family:inherit;" id="admin-toggle-btn">⚙️ Admin</button>
+    </div>
 
-    <div class="form-group">
-      <label>Your Name</label>
-      <input type="text" id="login-name" placeholder="Enter your first name" />
+    <!-- CLIENT LOGIN (default) -->
+    <div id="client-login-panel">
+      <h1 class="login-title">Welcome to Your<br>Success Hub 🔑</h1>
+      <p class="login-sub">By <span>Shelley McCune</span> | eXp Realty</p>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="login-name" placeholder="Enter your first name" />
+      </div>
+      <div class="form-group">
+        <label>Access Code</label>
+        <input type="password" id="login-code" placeholder="Enter your access code" />
+      </div>
+      <button class="login-btn" onclick="doLogin()">Enter My Hub →</button>
+      <div class="login-error" id="login-error">❌ That access code doesn't match. Check with Shelley!</div>
     </div>
-    <div class="form-group">
-      <label>Access Code</label>
-      <input type="password" id="login-code" placeholder="Enter your access code" />
+
+    <!-- ADMIN LOGIN (hidden by default) -->
+    <div id="admin-login-panel" style="display:none;">
+      <h1 class="login-title" style="font-size:1.4rem;">Admin Access 🔐</h1>
+      <p class="login-sub">Shelley McCune | Hub Dashboard</p>
+      <div class="form-group">
+        <label>Admin Code</label>
+        <input type="password" id="admin-code-input" placeholder="Enter admin code" />
+      </div>
+      <div class="form-group">
+        <label>PIN</label>
+        <input type="password" id="admin-pin-input" placeholder="4-digit PIN" maxlength="4" inputmode="numeric" />
+      </div>
+      <button class="login-btn" onclick="doAdminLogin()">Enter Admin Dashboard →</button>
+      <div class="login-error" id="admin-login-error">❌ Incorrect credentials.</div>
+      <div style="margin-top:14px;text-align:center;">
+        <button onclick="toggleAdminPanel()" style="background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:inherit;">← Back to client login</button>
+      </div>
     </div>
-    <button class="login-btn" onclick="doLogin()">Enter My Hub →</button>
-    <div class="login-error" id="login-error">❌ That access code doesn't match. Check with Shelley!</div>
 
     <p class="shelley-credit">A resource built with ❤️ by <strong>Shelley McCune, REALTOR®</strong><br>eXp Realty | Cincinnati, OH</p>
     <p style="font-size:10px; color:#aaa; margin-top:16px; line-height:1.6;">By logging in you acknowledge this platform is a supplemental study resource only and does not replace certified pre-licensing course materials. No guarantee of exam passage. See full disclaimer inside.</p>
@@ -2070,12 +2097,54 @@ function loadFromStorage(key) {
 // ===========================
 // AUTH — with Phase 5 admin patch
 // ===========================
+const ADMIN_CODE = 'SHELLEY';
+const ADMIN_PIN = '7255';
+
+function toggleAdminPanel() {
+  const client = document.getElementById('client-login-panel');
+  const admin = document.getElementById('admin-login-panel');
+  const btn = document.getElementById('admin-toggle-btn');
+  const showingAdmin = admin.style.display !== 'none';
+  client.style.display = showingAdmin ? 'block' : 'none';
+  admin.style.display = showingAdmin ? 'none' : 'block';
+  btn.textContent = showingAdmin ? '⚙️ Admin' : '← Client Login';
+}
+
+function doAdminLogin() {
+  const code = (document.getElementById('admin-code-input')?.value || '').trim().toUpperCase();
+  const pin = (document.getElementById('admin-pin-input')?.value || '').trim();
+  const err = document.getElementById('admin-login-error');
+  if (code !== ADMIN_CODE || pin !== ADMIN_PIN) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  currentUser = { name: 'Shelley', code: ADMIN_CODE };
+  saveToStorage('user', currentUser);
+  scoreHistory = loadFromStorage('scores_' + ADMIN_CODE) || [];
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-username').textContent = '👋 Shelley (Admin)';
+  document.getElementById('welcome-name').textContent = 'Welcome back, Shelley! 👋';
+  updateStats();
+  showPage('dashboard');
+  const adminSection = document.getElementById('admin-sidebar-section');
+  if (adminSection) adminSection.style.display = 'block';
+}
+
 function doLogin() {
   const name = document.getElementById('login-name').value.trim();
   const code = document.getElementById('login-code').value.trim().toUpperCase();
   const err = document.getElementById('login-error');
 
   if (!name) { err.style.display = 'block'; err.textContent = '⚠️ Please enter your name!'; return; }
+
+  // Block clients from using the admin code through the client panel
+  if (code === ADMIN_CODE) {
+    err.style.display = 'block';
+    err.textContent = "❌ That access code doesn't match. Check with Shelley!";
+    return;
+  }
 
   const client = CLIENTS.find(c => c.code === code);
   if (!client) {
