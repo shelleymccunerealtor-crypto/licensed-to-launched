@@ -1102,6 +1102,19 @@
           <div class="welcome-emoji">🔑</div>
         </div>
 
+        <!-- COLLEAGUE BANNER — shown only for colleague role -->
+        <div id="colleague-banner" style="display:none; background:linear-gradient(135deg,#fbe8f0,#f9efe7); border:1.5px solid #D4547E; border-radius:16px; padding:24px 28px; margin-bottom:24px;">
+          <div style="font-size:1.2rem; font-weight:700; color:#BB3A65; margin-bottom:8px;">👋 Hey Jennifer! Welcome to the Hub!</div>
+          <p style="font-size:14px; color:#555; line-height:1.7; margin-bottom:16px;">You're logged in as a <strong>Coaching Collaborator</strong>. This gives you a behind-the-scenes look at the <em>From Licensed to Launched</em> platform so we can work together on building this out. Feel free to explore everything — exam prep, checklists, broker guide, roadmap. I'd love your feedback! — <strong>Shelley 🌹</strong></p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button onclick="showPage('national')" style="background:#D4547E;color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">🇺🇸 Explore Exam Prep</button>
+            <button onclick="showPage('checklists')" style="background:white;color:#D4547E;border:1.5px solid #D4547E;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">✅ View Checklists</button>
+            <button onclick="showPage('broker')" style="background:white;color:#D4547E;border:1.5px solid #D4547E;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">🏢 Broker Guide</button>
+          </div>
+        </div>
+
+        <!-- STUDENT CONTENT — hidden for colleague role -->
+        <div id="student-dashboard-content">
         <div class="stats-row">
           <div class="stat-card">
             <div class="stat-num" id="stat-total">0</div>
@@ -1164,6 +1177,7 @@
             <span class="module-badge badge-coming">🔒 Coming Soon</span>
           </div>
         </div>
+        </div><!-- end student-dashboard-content -->
       </div>
 
       <!-- NATIONAL EXAM PAGE -->
@@ -1990,9 +2004,10 @@
 // ===========================
 const CLIENTS = [
   { code: "SHELLEY", name: "Shelley" },
-  { code: "LINDSAY50", name: "Lindsay" },
-  { code: "CLIENT02", name: "Client 2" },
-  { code: "CLIENT03", name: "Client 3" },
+  { code: "LINDSAY50", name: "Lindsay", role: "student" },
+  { code: "JENNIFER35", name: "Jennifer", role: "colleague" },
+  { code: "CLIENT02", name: "Client 2", role: "student" },
+  { code: "CLIENT03", name: "Client 3", role: "student" },
 ];
 
 // ===========================
@@ -2153,7 +2168,7 @@ function doLogin() {
     return;
   }
 
-  currentUser = { name: name || client.name, code: code };
+  currentUser = { name: name || client.name, code: code, role: client.role || 'student' };
   saveToStorage('user', currentUser);
   scoreHistory = loadFromStorage('scores_' + code) || [];
 
@@ -2161,6 +2176,12 @@ function doLogin() {
   document.getElementById('app').style.display = 'block';
   document.getElementById('nav-username').textContent = '👋 ' + currentUser.name;
   document.getElementById('welcome-name').textContent = 'Welcome back, ' + currentUser.name + '! 👋';
+
+  // Show colleague banner if role = colleague
+  const colleagueBanner = document.getElementById('colleague-banner');
+  const studentContent = document.getElementById('student-dashboard-content');
+  if (colleagueBanner) colleagueBanner.style.display = currentUser.role === 'colleague' ? 'block' : 'none';
+  if (studentContent) studentContent.style.display = currentUser.role === 'colleague' ? 'none' : 'block';
 
   updateStats();
   showPage('dashboard');
