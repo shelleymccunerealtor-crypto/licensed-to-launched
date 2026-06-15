@@ -2106,6 +2106,8 @@ function doLogin() {
 function doLogout() {
   currentUser = null;
   quizState = null;
+  // Clear saved session so auto-login doesn't re-load the previous user
+  try { localStorage.removeItem('ltl_user'); } catch(e) {}
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-name').value = '';
