@@ -1104,7 +1104,7 @@
 
         <!-- COLLEAGUE BANNER — shown only for colleague role -->
         <div id="colleague-banner" style="display:none; background:linear-gradient(135deg,#fbe8f0,#f9efe7); border:1.5px solid #D4547E; border-radius:16px; padding:24px 28px; margin-bottom:24px;">
-          <div style="font-size:1.2rem; font-weight:700; color:#BB3A65; margin-bottom:8px;">👋 Hey Jennifer! Welcome to the Hub!</div>
+          <div style="font-size:1.2rem; font-weight:700; color:#BB3A65; margin-bottom:8px;" id="colleague-greeting">👋 Hey there! Welcome to the Hub!</div>
           <p style="font-size:14px; color:#555; line-height:1.7; margin-bottom:16px;">You're logged in as a <strong>Coaching Collaborator</strong>. This gives you a behind-the-scenes look at the <em>From Licensed to Launched</em> platform so we can work together on building this out. Feel free to explore everything — exam prep, checklists, broker guide, roadmap. I'd love your feedback! — <strong>Shelley 🌹</strong></p>
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <button onclick="showPage('national')" style="background:#D4547E;color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">🇺🇸 Explore Exam Prep</button>
@@ -2006,6 +2006,7 @@ const CLIENTS = [
   { code: "SHELLEY", name: "Shelley" },
   { code: "LINDSAY50", name: "Lindsay", role: "student" },
   { code: "JENNIFER35", name: "Jennifer", role: "colleague" },
+  { code: "MIA60", name: "Mia", role: "colleague" },
   { code: "CLIENT02", name: "Client 2", role: "student" },
   { code: "CLIENT03", name: "Client 3", role: "student" },
 ];
@@ -2180,8 +2181,10 @@ function doLogin() {
   // Show colleague banner if role = colleague
   const colleagueBanner = document.getElementById('colleague-banner');
   const studentContent = document.getElementById('student-dashboard-content');
+  const colleagueGreeting = document.getElementById('colleague-greeting');
   if (colleagueBanner) colleagueBanner.style.display = currentUser.role === 'colleague' ? 'block' : 'none';
   if (studentContent) studentContent.style.display = currentUser.role === 'colleague' ? 'none' : 'block';
+  if (colleagueGreeting) colleagueGreeting.textContent = '👋 Hey ' + currentUser.name + '! Welcome to the Hub!';
 
   updateStats();
   showPage('dashboard');
